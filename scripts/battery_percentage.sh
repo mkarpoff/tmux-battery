@@ -24,6 +24,13 @@ print_battery_percentage() {
 		acpi -b | grep -m 1 -Eo "[0-9]+%"
 	elif command_exists "termux-battery-status"; then
 		termux-battery-status | jq -r '.percentage' | awk '{printf("%d%%", $1)}'
+	else
+		for i in $(ls /sys/class/power_supply/);do
+			type=$(<"/sys/class/power_supply/$i/type")
+			if [ "$type" == "Battery" ]; then
+				cat "/sys/class/power_supply/$i/capacity" | awk '{printf("%s%%", $1)}'
+			fi
+		done
 	fi
 }
 
